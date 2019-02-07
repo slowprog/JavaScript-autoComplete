@@ -1,8 +1,5 @@
 /*
-    JavaScript autoComplete v1.0.4
-    Copyright (c) 2014 Simon Steinberger / Pixabay
-    GitHub: https://github.com/Pixabay/JavaScript-autoComplete
-    License: http://www.opensource.org/licenses/mit-license.php
+    GitHub: https://github.com/slowprog/JavaScript-autoComplete.git
 */
 
 var autoComplete = (function(){
@@ -36,6 +33,7 @@ var autoComplete = (function(){
             offsetLeft: 0,
             offsetTop: 1,
             disableVerticalPositioning: false,
+            disableAutoDisplay: false,
             cache: 1,
             menuClass: '',
             renderItem: function (item, search){
@@ -62,7 +60,6 @@ var autoComplete = (function(){
             that.cache = {};
             that.last_val = '';
             that.selectedByMouse = false;
-            that.locked = false;
 
             that.updateSC = function(resize, next){
                 var rect = that.getBoundingClientRect();
@@ -72,7 +69,7 @@ var autoComplete = (function(){
                 }
                 that.sc.style.width = Math.round(rect.right - rect.left) + 'px'; // outerWidth
                 if (!resize) {
-                    if (!o.disableAutoDisplay && !that.locked) {
+                    if (!o.disableAutoDisplay) {
                         that.sc.style.display = 'block';
                     }
                     if (!that.sc.maxHeight) { that.sc.maxHeight = parseInt((window.getComputedStyle ? getComputedStyle(that.sc, null) : that.sc.currentStyle).maxHeight); }
@@ -108,7 +105,6 @@ var autoComplete = (function(){
                 if (hasClass(this, 'autocomplete-suggestion')) { // else outside click
                     var v = this.getAttribute('data-val');
                     that.value = v;
-                    that.locked = true;
                     o.onSelect(e, v, this);
                     that.sc.style.display = 'none';
                     that.selectedByMouse = false;
@@ -122,8 +118,7 @@ var autoComplete = (function(){
                     that.sc.style.display = 'none';
                     that.selectedByMouse = false;
                     setTimeout(function(){ that.sc.style.display = 'none'; }, 350); // hide suggestions on fast input
-                } else if (that !== document.activeElement) setTimeout(function(){ /*that.focus();*/ }, 20);
-                that.locked = false;
+                } // else if (that !== document.activeElement) setTimeout(function(){ /*that.focus();*/ }, 20);
             };
             addEvent(that, 'blur', that.blurHandler);
 
@@ -150,7 +145,7 @@ var autoComplete = (function(){
                         next.className += ' selected';
                         that.value = next.getAttribute('data-val');
                     } else {
-                        next = (key == 40) ? sel.nextSibling : sel.previousSibling;
+                        next = (key == 40) ? sel.nextElementSibling : sel.previousElementSibling;
                         if (next) {
                             sel.className = sel.className.replace('selected', '');
                             next.className += ' selected';
@@ -168,7 +163,6 @@ var autoComplete = (function(){
                 else if (key == 13 || key == 9) {
                     var sel = that.sc.querySelector('.autocomplete-suggestion.selected');
                     if (sel && that.sc.style.display != 'none' && !that.selectedByMouse) {
-                        that.locked = true;
                         o.onSelect(e, sel.getAttribute('data-val'), sel);
                         setTimeout(function(){ that.sc.style.display = 'none'; }, 20);
                     }
@@ -205,8 +199,7 @@ var autoComplete = (function(){
 
             that.focusHandler = function(e){
                 that.last_val = '\n';
-                that.keyupHandler(e)
-                that.locked = false;
+                that.keyupHandler(e);
             };
             if (!o.minChars) addEvent(that, 'focus', that.focusHandler);
         }
@@ -232,7 +225,6 @@ var autoComplete = (function(){
         this.unlock = function () {
             for (var i=0; i<elems.length; i++) {
                 var that = elems[i];
-                that.locked = false;
             }
         };
     }
